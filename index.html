@@ -629,7 +629,38 @@ body {
   outline: none;
 }
 
-/* ── RESULTS ── */
+/* ── CATEGORY FILTER ── */
+.cat-filter-section {
+  padding: 0 16px 0;
+}
+.cat-filter-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  padding: 10px 0 8px;
+}
+.cat-filter-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.cat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  cursor: pointer;
+}
+.cat-row:last-child { border-bottom: none; }
+.cat-row:active { background: var(--surface2); }
+.cat-label { font-size: 13px; font-weight: 600; }
+.cat-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
 .results-body {
   padding: 20px 16px;
   display: flex;
@@ -923,7 +954,13 @@ body {
       </label>
     </div>
   </div>
-  <div style="padding: 0 16px;">
+  <div class="cat-filter-section">
+    <div class="cat-filter-title">Категорії водійського посвідчення</div>
+    <div class="cat-filter-card" id="catFilterCard">
+      <!-- built by JS -->
+    </div>
+  </div>
+  <div style="padding: 0 16px 4px;">
     <button class="btn-primary" onclick="startExam()">🚀 Почати іспит</button>
   </div>
 </div>
@@ -1050,7 +1087,7 @@ function updateHomeStats() {
   const total = QUESTIONS.length;
   const exams = state.progress.exams || 0;
 
-  document.getElementById('homeStatStudied').textContent = studied;
+  document.getElementById('homeStatStudied').textContent = correct;
   document.getElementById('homeStatExams').textContent = exams;
   document.getElementById('pgCorrect').textContent = `${correct} / ${studied}`;
   const pct = studied > 0 ? Math.round(correct / studied * 100) : 0;
@@ -1118,6 +1155,7 @@ function showExamConfig() {
   stopExamTimer();
   screenStack = ['screenHome', 'screenExamConfig'];
   buildExamConfigSections();
+  buildCatFilter();
   showScreen('screenExamConfig');
   setNavBar(true, 'Іспит');
   syncExamConfig();
@@ -1281,15 +1319,18 @@ function studyAnswer(optIdx) {
   markAnswered(q.id, correct);
   renderStudyQuestion();
 
-  // Auto-advance after 1.2s if correct
+  // Auto-advance after 1.2s if correct — store timer so manual nav can cancel it
   if (correct) {
-    setTimeout(() => {
+    studyAutoAdvTimer = setTimeout(() => {
+      studyAutoAdvTimer = null;
       if (state.studyIdx < state.currentSectionQs.length - 1) {
         studyNav(1);
       }
     }, 1200);
   }
 }
+
+let studyAutoAdvTimer = null;
 
 function showStudyAnswer() {
   const q = state.currentSectionQs[state.studyIdx];
@@ -1298,11 +1339,58 @@ function showStudyAnswer() {
 }
 
 function studyNav(dir) {
+  if (studyAutoAdvTimer) { clearTimeout(studyAutoAdvTimer); studyAutoAdvTimer = null; }
   const newIdx = state.studyIdx + dir;
   if (newIdx < 0 || newIdx >= state.currentSectionQs.length) return;
   state.studyIdx = newIdx;
   renderStudyQuestion();
   document.getElementById('studyQuestionArea').scrollTop = 0;
+}
+
+// ═══════════════════════════════════════
+// DRIVING CATEGORY FILTER
+// ═══════════════════════════════════════
+const DRIVING_CATEGORIES = [
+  { id: 'A',  label: 'А, А1',              sectionPrefix: 'Категорії А, А1' },
+  { id: 'B',  label: 'B, B1',              sectionPrefix: 'Категорії B, B1' },
+  { id: 'C',  label: 'C, C1',              sectionPrefix: 'Категорії C, C1' },
+  { id: 'D',  label: 'D, D1',              sectionPrefix: 'Категорії D, D1' },
+  { id: 'BE', label: 'BE, C1E, CE, D1E, DE', sectionPrefix: 'Категорії BE, C1E, CE, D1E, DE' },
+  { id: 'T',  label: 'T',                  sectionPrefix: 'Категорія T' },
+];
+
+// default: all enabled
+let enabledCategories = Object.fromEntries(DRIVING_CATEGORIES.map(c => [c.id, true]));
+
+function isCategorySection(sectionName) {
+  return DRIVING_CATEGORIES.some(c => sectionName.startsWith(c.sectionPrefix));
+}
+
+function buildCatFilter() {
+  const card = document.getElementById('catFilterCard');
+  card.innerHTML = '';
+  DRIVING_CATEGORIES.forEach(cat => {
+    const row = document.createElement('label');
+    row.className = 'cat-row';
+    const checked = enabledCategories[cat.id] ? 'checked' : '';
+    // count questions in this category
+    const qCount = QUESTIONS.filter(q => q.section.startsWith(cat.sectionPrefix)).length;
+    row.innerHTML = `
+      <div>
+        <div class="cat-label">Категорія ${escHtml(cat.label)}</div>
+        <div class="cat-sub">${qCount} питань</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" ${checked} onchange="toggleCategory('${cat.id}', this.checked)">
+        <div class="toggle-track"></div>
+      </label>
+    `;
+    card.appendChild(row);
+  });
+}
+
+function toggleCategory(id, val) {
+  enabledCategories[id] = val;
 }
 
 // ═══════════════════════════════════════
@@ -1333,6 +1421,18 @@ function startExam() {
   let pool = examConfig.section === 'all'
     ? [...QUESTIONS]
     : QUESTIONS.filter(q => q.section === examConfig.section);
+
+  // Filter out category-specific sections that are disabled
+  pool = pool.filter(q => {
+    const catMatch = DRIVING_CATEGORIES.find(c => q.section.startsWith(c.sectionPrefix));
+    if (!catMatch) return true; // non-category section: always include
+    return enabledCategories[catMatch.id];
+  });
+
+  if (pool.length === 0) {
+    alert('Немає питань для вибраних категорій. Оберіть хоча б одну категорію.');
+    return;
+  }
 
   if (examConfig.shuffle) {
     for (let i = pool.length - 1; i > 0; i--) {
@@ -1416,6 +1516,8 @@ function renderExamQuestion() {
   `;
 }
 
+let examAutoAdvTimer = null;
+
 function examAnswer(optIdx) {
   if (state.examAnswers[state.examIdx]) return;
   const q = state.examQs[state.examIdx];
@@ -1426,16 +1528,17 @@ function examAnswer(optIdx) {
     state.examWrongQs.push({ q, selected: optIdx });
   }
   renderExamQuestion();
-  // Auto-advance if correct
+  // Auto-advance if correct — store timer so manual Next can cancel it
   if (correct) {
-    setTimeout(() => examNext(), 900);
+    examAutoAdvTimer = setTimeout(() => { examAutoAdvTimer = null; examNext(); }, 900);
   }
 }
 
 function examNext() {
+  // Cancel pending auto-advance so we don't skip an extra question
+  if (examAutoAdvTimer) { clearTimeout(examAutoAdvTimer); examAutoAdvTimer = null; }
   const total = state.examQs.length;
   if (state.examIdx < total - 1) {
-    // Skip to next unanswered, or just go forward
     state.examIdx++;
     renderExamQuestion();
     document.getElementById('examBody').scrollTop = 0;
