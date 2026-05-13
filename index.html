@@ -1066,9 +1066,15 @@ function saveProgress() {
 }
 function markAnswered(qid, correct) {
   if (!state.progress.answers) state.progress.answers = {};
-  if (!state.progress.answers[qid]) state.progress.answers[qid] = { attempts: 0, correct: 0 };
-  state.progress.answers[qid].attempts++;
-  if (correct) state.progress.answers[qid].correct++;
+  if (!state.progress.answers[qid]) state.progress.answers[qid] = { attempts: 0, correctCount: 0, lastCorrect: false };
+  const rec = state.progress.answers[qid];
+  rec.attempts++;
+  if (correct) {
+    rec.correctCount++;
+    rec.lastCorrect = true;   // learned
+  } else {
+    rec.lastCorrect = false;  // deduct: no longer considered learned
+  }
   saveProgress();
   updateHomeStats();
 }
@@ -1083,14 +1089,14 @@ function updateHomeStats() {
   const answers = state.progress.answers || {};
   const ids = Object.keys(answers);
   const studied = ids.length;
-  const correct = ids.filter(id => answers[id].correct > 0).length;
-  const total = QUESTIONS.length;
+  // "learned" = currently lastCorrect (deducted when answered wrong)
+  const learned = ids.filter(id => answers[id].lastCorrect).length;
   const exams = state.progress.exams || 0;
 
-  document.getElementById('homeStatStudied').textContent = correct;
+  document.getElementById('homeStatStudied').textContent = learned;
   document.getElementById('homeStatExams').textContent = exams;
-  document.getElementById('pgCorrect').textContent = `${correct} / ${studied}`;
-  const pct = studied > 0 ? Math.round(correct / studied * 100) : 0;
+  document.getElementById('pgCorrect').textContent = `${learned} / ${studied}`;
+  const pct = studied > 0 ? Math.round(learned / studied * 100) : 0;
   document.getElementById('pgBar').style.width = pct + '%';
   document.getElementById('pgExams').textContent = exams;
 }
@@ -1434,14 +1440,41 @@ function startExam() {
     return;
   }
 
-  if (examConfig.shuffle) {
-    for (let i = pool.length - 1; i > 0; i--) {
+  // Weighted selection: unseen=3, failed (lastCorrect=false but seen)=5, learned=1
+  const answers = state.progress.answers || {};
+  function getWeight(q) {
+    const rec = answers[q.id];
+    if (!rec) return 3;                    // never seen
+    if (!rec.lastCorrect) return 5;        // seen but currently wrong
+    return 1;                              // learned
+  }
+
+  let selected;
+  if (!examConfig.shuffle) {
+    selected = pool.slice(0, examConfig.questions);
+  } else {
+    // Build weighted pool then pick without replacement
+    const remaining = [...pool];
+    selected = [];
+    const n = Math.min(examConfig.questions, remaining.length);
+    for (let i = 0; i < n; i++) {
+      const totalWeight = remaining.reduce((s, q) => s + getWeight(q), 0);
+      let r = Math.random() * totalWeight;
+      let pick = 0;
+      for (let j = 0; j < remaining.length; j++) {
+        r -= getWeight(remaining[j]);
+        if (r <= 0) { pick = j; break; }
+      }
+      selected.push(remaining.splice(pick, 1)[0]);
+    }
+    // Shuffle selected order so question types don't cluster
+    for (let i = selected.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
+      [selected[i], selected[j]] = [selected[j], selected[i]];
     }
   }
 
-  state.examQs = pool.slice(0, examConfig.questions);
+  state.examQs = selected;
   state.examIdx = 0;
   state.examAnswers = new Array(state.examQs.length).fill(null);
   state.examSecsLeft = examConfig.time * 60;
@@ -1584,14 +1617,15 @@ function finishExam(timeout = false) {
   const correct = state.examAnswers.filter(a => a && a.correct).length;
   const wrong = answered - correct;
   const pct = Math.round(correct / total * 100);
-  const pass = pct >= 75;
+  const pass = wrong <= 2;
 
   document.getElementById('resultEmoji').textContent = pass ? '🎉' : '😔';
   const verdict = document.getElementById('resultVerdict');
   verdict.textContent = pass ? 'ЗДАНО!' : 'НЕ ЗДАНО';
   verdict.className = 'result-verdict ' + (pass ? 'pass' : 'fail');
   document.getElementById('resultScore').textContent =
-    timeout ? `Час вийшов! Дано відповідей: ${answered}/${total}` : `${correct} з ${total} правильних`;
+    timeout ? `Час вийшов! Відповідей: ${answered}/${total}` :
+    `${correct} правильних, ${wrong} помилок (допустимо ≤ 2)`;
   document.getElementById('resCorrect').textContent = correct;
   document.getElementById('resWrong').textContent = wrong;
   document.getElementById('resPct').textContent = pct + '%';
