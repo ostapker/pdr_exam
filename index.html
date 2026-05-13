@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f0a500">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ПДР">
+<link rel="manifest" href="manifest.json">
+<title>ПДР України</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1e2530;
+  --border: #30363d;
+  --accent: #f0a500;
+  --accent2: #e05252;
+  --correct: #2ea043;
+  --wrong: #da3633;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --radius: 12px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── NAV BAR ── */
+.navbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: calc(var(--safe-top) + 10px) 16px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--text); }
+.nav-back {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  display: none;
+}
+.nav-back.show { display: flex; align-items: center; }
+.nav-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  flex: 1;
+  margin: 0 8px;
+  display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-title.show { display: block; }
+
+/* ── SCREENS ── */
+.screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--safe-bottom) + 16px);
+}
+.screen.active { display: flex; }
+
+/* ── HOME SCREEN ── */
+.home-hero {
+  background: linear-gradient(135deg, #161b22 0%, #1e2530 100%);
+  padding: 28px 20px 24px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.hero-badge {
+  display: inline-block;
+  background: rgba(240,165,0,0.15);
+  border: 1px solid rgba(240,165,0,0.4);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.hero-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.hero-title .hl { color: var(--accent); }
+.hero-sub {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 auto;
+}
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 16px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.stat-card .val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.stat-card .lbl {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+.mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 8px;
+}
+.mode-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+}
+.mode-card:active { transform: scale(0.98); }
+.mode-card.study:active, .mode-card.study:hover { border-color: #4dabf7; }
+.mode-card.exam:active, .mode-card.exam:hover { border-color: var(--accent); }
+.mode-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.mode-card.study .mode-icon { background: rgba(77,171,247,0.15); }
+.mode-card.exam .mode-icon { background: rgba(240,165,0,0.15); }
+.mode-info { flex: 1 }
+.mode-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.mode-card.study .mode-name { color: #4dabf7; }
+.mode-card.exam .mode-name { color: var(--accent); }
+.mode-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.mode-arrow { color: var(--muted); font-size: 18px; }
+
+.progress-section {
+  padding: 0 16px 16px;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  padding: 12px 0 8px;
+}
+.progress-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.progress-row .label { color: var(--muted); }
+.progress-row .val { font-weight: 700; }
+.pg-bar {
+  height: 5px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.pg-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #ffb820);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.reset-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 0;
+  font-family: 'Manrope', sans-serif;
+  text-decoration: underline;
+}
+
+/* ── STUDY: SECTION LIST ── */
+.list-search {
+  padding: 12px 16px 8px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.search-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  outline: none;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--muted); }
+.section-list { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.section-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-item:active { transform: scale(0.99); border-color: #4dabf7; }
+.section-item .snum {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4dabf7;
+  background: rgba(77,171,247,0.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  min-width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.section-item .sinfo { flex: 1 }
+.section-item .sname { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 3px; }
+.section-item .smeta { font-size: 11px; color: var(--muted); display: flex; gap: 8px; }
+.section-item .scheck { color: var(--muted); font-size: 16px; }
+.section-item .spg {
+  height: 3px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+.section-item .spg-fill {
+  height: 100%;
+  background: #4dabf7;
+  border-radius: 2px;
+}
+
+/* ── STUDY: QUESTION VIEWER ── */
+.study-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.q-counter {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.q-progress-bar { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.q-progress-fill { height: 100%; background: #4dabf7; border-radius: 2px; transition: width 0.3s; }
+.nav-arrows { display: flex; gap: 6px; }
+.nav-arrow {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 16px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.nav-arrow:active { border-color: #4dabf7; color: #4dabf7; }
+.nav-arrow:disabled { opacity: 0.3; pointer-events: none; }
+
+.question-area {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.q-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #4dabf7;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.q-tag .qid { color: var(--muted); }
+.q-text {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.q-imgs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.q-imgs img {
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  object-fit: contain;
+  background: #000;
+  cursor: zoom-in;
+}
+.options { display: flex; flex-direction: column; gap: 8px; }
+.option {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: all 0.15s;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.option:active:not(.disabled) { opacity: 0.8; }
+.option.selected-correct { border-color: var(--correct) !important; background: rgba(46,160,67,0.12) !important; }
+.option.selected-wrong { border-color: var(--wrong) !important; background: rgba(218,54,51,0.12) !important; }
+.option.reveal-correct { border-color: var(--correct) !important; background: rgba(46,160,67,0.08) !important; }
+.option.disabled { cursor: default; }
+.opt-letter {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 20px;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+.option.selected-correct .opt-letter { color: var(--correct); }
+.option.selected-wrong .opt-letter { color: var(--wrong); }
+.option.reveal-correct .opt-letter { color: var(--correct); }
+
+.feedback-strip {
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.feedback-strip.show { display: flex; }
+.feedback-strip.fb-ok { background: rgba(46,160,67,0.15); border: 1px solid rgba(46,160,67,0.4); color: #3fb950; }
+.feedback-strip.fb-no { background: rgba(218,54,51,0.15); border: 1px solid rgba(218,54,51,0.4); color: #f85149; }
+
+.show-answer-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  margin-top: 8px;
+  transition: all 0.15s;
+  display: none;
+}
+.show-answer-btn.show { display: block; }
+.show-answer-btn:active { border-color: #4dabf7; color: #4dabf7; }
+
+/* ── EXAM MODE ── */
+.exam-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+.exam-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.exam-qnum {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+}
+.timer-box { text-align: right; }
+.timer-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.timer-val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent);
+  transition: color 0.3s;
+  line-height: 1;
+}
+.timer-val.warning { color: var(--accent2); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.exam-score-row {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.score-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface2);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-weight: 700;
+}
+.score-chip.ok { color: var(--correct); }
+.score-chip.no { color: var(--wrong); }
+.score-chip.rem { color: var(--muted); }
+.exam-pb { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.exam-pb-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #ffb820); border-radius: 2px; transition: width 0.4s; }
+
+.exam-body {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.exam-next-btn {
+  background: var(--accent);
+  color: #0d1117;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+  display: none;
+}
+.exam-next-btn.show { display: block; }
+.exam-next-btn:active { transform: scale(0.98); background: #ffb820; }
+
+/* ── EXAM CONFIG ── */
+.exam-config-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 0 16px 12px;
+}
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.config-row:last-child { border-bottom: none; }
+.config-label { font-size: 13px; font-weight: 600; }
+.config-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.config-val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 60px;
+  text-align: right;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.step-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.step-btn:active { border-color: var(--accent); color: var(--accent); }
+.toggle-wrap { display: flex; align-items: center; gap: 8px; }
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle input:checked + .toggle-track { background: var(--accent); border-color: var(--accent); }
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 2px; top: 2px;
+  background: var(--muted);
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.toggle input:checked + .toggle-track::after {
+  left: 22px;
+  background: #0d1117;
+}
+.section-selector {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  padding: 6px 10px;
+  max-width: 170px;
+  outline: none;
+}
+
+/* ── RESULTS ── */
+.results-body {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.result-hero {
+  text-align: center;
+  padding: 24px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.result-emoji { font-size: 56px; margin-bottom: 12px; }
+.result-verdict {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+.result-verdict.pass { color: var(--correct); }
+.result-verdict.fail { color: var(--wrong); }
+.result-score {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.result-bars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 4px;
+}
+.result-bar-item { text-align: center; }
+.result-bar-val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+.result-bar-val.c { color: var(--correct); }
+.result-bar-val.w { color: var(--wrong); }
+.result-bar-val.s { color: var(--accent); }
+.result-bar-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.result-time { font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+.result-actions { display: flex; flex-direction: column; gap: 10px; }
+.btn-primary {
+  background: var(--accent);
+  color: #0d1117;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+}
+.btn-primary:active { background: #ffb820; transform: scale(0.98); }
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+}
+.btn-secondary:active { border-color: var(--accent); color: var(--accent); }
+
+.wrong-list { display: flex; flex-direction: column; gap: 8px; }
+.wrong-item {
+  background: var(--surface);
+  border: 1px solid rgba(218,54,51,0.3);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.wrong-item .wi-q { font-weight: 600; margin-bottom: 8px; }
+.wrong-item .wi-given { color: var(--wrong); font-size: 12px; margin-bottom: 3px; }
+.wrong-item .wi-correct { color: var(--correct); font-size: 12px; }
+
+/* ── IMAGE ZOOM ── */
+.img-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.img-overlay.show { display: flex; }
+.img-overlay img {
+  max-width: 95vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* ── INSTALL BANNER ── */
+.install-banner {
+  background: rgba(240,165,0,0.12);
+  border: 1px solid rgba(240,165,0,0.3);
+  border-radius: 10px;
+  margin: 12px 16px 0;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.install-banner .ib-text { flex: 1; line-height: 1.4; }
+.install-banner .ib-text strong { color: var(--accent); display: block; margin-bottom: 2px; }
+.install-btn {
+  background: var(--accent);
+  color: #0d1117;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ib-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+
+<!-- IMAGE ZOOM OVERLAY -->
+<div class="img-overlay" id="imgOverlay" onclick="closeZoom()">
+  <img id="zoomImg" src="" alt="">
+</div>
+
+<!-- NAV BAR -->
+<div class="navbar">
+  <button class="nav-back" id="navBack" onclick="goBack()">←</button>
+  <div class="nav-title" id="navTitle"></div>
+  <div class="logo">ПДР<span>ua</span></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- HOME SCREEN -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen active" id="screenHome">
+  <div id="installBanner" class="install-banner" style="display:none">
+    <div class="ib-text">
+      <strong>📲 Встановити на телефон</strong>
+      Додайте додаток на головний екран для офлайн доступу
+    </div>
+    <button class="install-btn" id="installBtn">Додати</button>
+    <button class="ib-close" onclick="document.getElementById('installBanner').style.display='none'">×</button>
+  </div>
+  <div class="home-hero">
+    <div class="hero-badge">🇺🇦 Підготовка до іспиту</div>
+    <div class="hero-title">ПДР <span class="hl">України</span></div>
+    <div class="hero-sub">2332 питання • 65 розділів<br>Режим навчання та іспиту</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="val" id="homeStatTotal">2332</div>
+      <div class="lbl">Питань</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="homeStatStudied">0</div>
+      <div class="lbl">Вивчено</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="homeStatExams">0</div>
+      <div class="lbl">Іспитів</div>
+    </div>
+  </div>
+  <div class="mode-cards">
+    <div class="mode-card study" onclick="showStudy()">
+      <div class="mode-icon">📚</div>
+      <div class="mode-info">
+        <div class="mode-name">Навчання</div>
+        <div class="mode-desc">Перегляд питань по розділах. Відповідайте і перевіряйте правильність.</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+    <div class="mode-card exam" onclick="showExamConfig()">
+      <div class="mode-icon">🏆</div>
+      <div class="mode-info">
+        <div class="mode-name">Іспит</div>
+        <div class="mode-desc">Симуляція реального іспиту. 20 питань за 20 хвилин.</div>
+      </div>
+      <div class="mode-arrow">›</div>
+    </div>
+  </div>
+  <div class="progress-section">
+    <div class="section-title">Мій прогрес</div>
+    <div class="progress-card">
+      <div class="progress-row"><span class="label">Правильних відповідей</span><span class="val" id="pgCorrect">0 / 0</span></div>
+      <div class="pg-bar"><div class="pg-fill" id="pgBar" style="width:0%"></div></div>
+      <div class="progress-row" style="margin-bottom:0"><span class="label">Іспитів складено</span><span class="val" id="pgExams">0</span></div>
+      <br>
+      <button class="reset-btn" onclick="confirmReset()">Скинути прогрес</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- STUDY: SECTION LIST -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screenSections">
+  <div class="list-search">
+    <input class="search-input" type="search" placeholder="🔍 Пошук розділу…" id="sectionSearch" oninput="filterSections()">
+  </div>
+  <div class="section-list" id="sectionList"></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- STUDY: QUESTIONS -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screenStudy">
+  <div class="study-nav">
+    <span class="q-counter" id="studyCounter">1 / 20</span>
+    <div class="q-progress-bar"><div class="q-progress-fill" id="studyPBar" style="width:5%"></div></div>
+    <div class="nav-arrows">
+      <button class="nav-arrow" id="prevBtn" onclick="studyNav(-1)">‹</button>
+      <button class="nav-arrow" id="nextBtn" onclick="studyNav(1)">›</button>
+    </div>
+  </div>
+  <div class="question-area" id="studyQuestionArea">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- EXAM CONFIG -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screenExamConfig">
+  <div style="padding: 20px 16px 12px">
+    <div class="section-title" style="padding-top:0">Налаштування іспиту</div>
+  </div>
+  <div class="exam-config-card">
+    <div class="config-row">
+      <div>
+        <div class="config-label">Кількість питань</div>
+        <div class="config-sub">Реальний іспит: 20</div>
+      </div>
+      <div class="stepper">
+        <button class="step-btn" onclick="adjustConfig('questions', -5)">−</button>
+        <div class="config-val" id="cfgQuestions">20</div>
+        <button class="step-btn" onclick="adjustConfig('questions', 5)">+</button>
+      </div>
+    </div>
+    <div class="config-row">
+      <div>
+        <div class="config-label">Час (хвилин)</div>
+        <div class="config-sub">Реальний іспит: 20</div>
+      </div>
+      <div class="stepper">
+        <button class="step-btn" onclick="adjustConfig('time', -5)">−</button>
+        <div class="config-val" id="cfgTime">20</div>
+        <button class="step-btn" onclick="adjustConfig('time', 5)">+</button>
+      </div>
+    </div>
+    <div class="config-row">
+      <div>
+        <div class="config-label">Розділ</div>
+        <div class="config-sub">Всі або конкретний</div>
+      </div>
+      <select class="section-selector" id="cfgSection">
+        <option value="all">Всі розділи</option>
+      </select>
+    </div>
+    <div class="config-row">
+      <div>
+        <div class="config-label">Перемішати питання</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="cfgShuffle" checked>
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+  </div>
+  <div style="padding: 0 16px;">
+    <button class="btn-primary" onclick="startExam()">🚀 Почати іспит</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- EXAM SCREEN -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screenExam">
+  <div class="exam-header">
+    <div class="exam-top-row">
+      <div class="exam-qnum" id="examQNum">Питання 1 / 20</div>
+      <div class="timer-box">
+        <div class="timer-label">Час</div>
+        <div class="timer-val" id="examTimer">20:00</div>
+      </div>
+    </div>
+    <div class="exam-score-row">
+      <div class="score-chip ok">✓ <span id="examCorrect">0</span></div>
+      <div class="score-chip no">✗ <span id="examWrong">0</span></div>
+      <div class="score-chip rem">◷ <span id="examRem">20</span></div>
+    </div>
+    <div class="exam-pb"><div class="exam-pb-fill" id="examPBar" style="width:0%"></div></div>
+  </div>
+  <div class="exam-body" id="examBody">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- RESULTS -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screenResults">
+  <div class="results-body">
+    <div class="result-hero">
+      <div class="result-emoji" id="resultEmoji">🎉</div>
+      <div class="result-verdict" id="resultVerdict">Успішно!</div>
+      <div class="result-score" id="resultScore"></div>
+      <div class="result-bars">
+        <div class="result-bar-item">
+          <div class="result-bar-val c" id="resCorrect">0</div>
+          <div class="result-bar-lbl">Правильно</div>
+        </div>
+        <div class="result-bar-item">
+          <div class="result-bar-val w" id="resWrong">0</div>
+          <div class="result-bar-lbl">Помилок</div>
+        </div>
+        <div class="result-bar-item">
+          <div class="result-bar-val s" id="resPct">0%</div>
+          <div class="result-bar-lbl">Результат</div>
+        </div>
+      </div>
+      <div class="result-time" id="resTime"></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-primary" onclick="showExamConfig()">🔄 Новий іспит</button>
+      <button class="btn-secondary" onclick="showHome()">🏠 На головну</button>
+    </div>
+    <div id="wrongListWrap">
+      <div class="section-title">Питання з помилками</div>
+      <div class="wrong-list" id="wrongList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="questions_data.js"></script>
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let state = {
+  // study
+  sections: [],
+  currentSection: null,
+  currentSectionQs: [],
+  studyIdx: 0,
+  studyAnswered: {}, // questionId → {selected, correct}
+
+  // exam
+  examQs: [],
+  examIdx: 0,
+  examAnswers: [], // {selected, correct}
+  examTimer: null,
+  examSecsLeft: 0,
+  examConfig: { questions: 20, time: 20, section: 'all', shuffle: true },
+  examStartTime: null,
+  examWrongQs: [],
+
+  // persist
+  progress: {}
+};
+
+// ═══════════════════════════════════════
+// PERSISTENCE
+// ═══════════════════════════════════════
+function loadProgress() {
+  try {
+    const p = JSON.parse(localStorage.getItem('pdr_progress') || '{}');
+    state.progress = p;
+  } catch(e) {}
+}
+function saveProgress() {
+  try { localStorage.setItem('pdr_progress', JSON.stringify(state.progress)); } catch(e) {}
+}
+function markAnswered(qid, correct) {
+  if (!state.progress.answers) state.progress.answers = {};
+  if (!state.progress.answers[qid]) state.progress.answers[qid] = { attempts: 0, correct: 0 };
+  state.progress.answers[qid].attempts++;
+  if (correct) state.progress.answers[qid].correct++;
+  saveProgress();
+  updateHomeStats();
+}
+function getExamCount() { return state.progress.exams || 0; }
+function incExamCount() {
+  state.progress.exams = (state.progress.exams || 0) + 1;
+  saveProgress();
+  updateHomeStats();
+}
+
+function updateHomeStats() {
+  const answers = state.progress.answers || {};
+  const ids = Object.keys(answers);
+  const studied = ids.length;
+  const correct = ids.filter(id => answers[id].correct > 0).length;
+  const total = QUESTIONS.length;
+  const exams = state.progress.exams || 0;
+
+  document.getElementById('homeStatStudied').textContent = studied;
+  document.getElementById('homeStatExams').textContent = exams;
+  document.getElementById('pgCorrect').textContent = `${correct} / ${studied}`;
+  const pct = studied > 0 ? Math.round(correct / studied * 100) : 0;
+  document.getElementById('pgBar').style.width = pct + '%';
+  document.getElementById('pgExams').textContent = exams;
+}
+
+function confirmReset() {
+  if (confirm('Скинути весь прогрес?')) {
+    state.progress = {};
+    saveProgress();
+    updateHomeStats();
+  }
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+let screenStack = ['screenHome'];
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById(id).scrollTop = 0;
+}
+
+function setNavBar(backVisible, title) {
+  document.getElementById('navBack').classList.toggle('show', backVisible);
+  const nt = document.getElementById('navTitle');
+  if (title) { nt.textContent = title; nt.classList.add('show'); }
+  else { nt.textContent = ''; nt.classList.remove('show'); }
+}
+
+function goBack() {
+  screenStack.pop();
+  const prev = screenStack[screenStack.length - 1] || 'screenHome';
+
+  if (prev === 'screenHome') {
+    showHome();
+  } else if (prev === 'screenSections') {
+    showStudy();
+  } else if (prev === 'screenExamConfig') {
+    showExamConfig();
+  } else {
+    showHome();
+  }
+}
+
+function showHome() {
+  screenStack = ['screenHome'];
+  stopExamTimer();
+  showScreen('screenHome');
+  setNavBar(false, '');
+  updateHomeStats();
+}
+
+function showStudy() {
+  screenStack = ['screenHome', 'screenSections'];
+  buildSectionList();
+  showScreen('screenSections');
+  setNavBar(true, 'Навчання');
+}
+
+function showExamConfig() {
+  stopExamTimer();
+  screenStack = ['screenHome', 'screenExamConfig'];
+  buildExamConfigSections();
+  showScreen('screenExamConfig');
+  setNavBar(true, 'Іспит');
+  syncExamConfig();
+}
+
+// ═══════════════════════════════════════
+// BUILD SECTIONS
+// ═══════════════════════════════════════
+function init() {
+  loadProgress();
+
+  // Build sections array
+  const sectionMap = {};
+  QUESTIONS.forEach(q => {
+    if (!sectionMap[q.section]) sectionMap[q.section] = [];
+    sectionMap[q.section].push(q);
+  });
+  state.sections = Object.entries(sectionMap).map(([name, qs]) => ({ name, qs }));
+
+  updateHomeStats();
+  document.getElementById('homeStatTotal').textContent = QUESTIONS.length;
+
+  // PWA install
+  setupPWA();
+}
+
+function buildSectionList(filter = '') {
+  const list = document.getElementById('sectionList');
+  list.innerHTML = '';
+  const fl = filter.toLowerCase();
+  state.sections.forEach((sec, i) => {
+    if (fl && !sec.name.toLowerCase().includes(fl)) return;
+    const answered = state.progress.answers || {};
+    const qCount = sec.qs.length;
+    const studied = sec.qs.filter(q => answered[q.id]).length;
+    const pct = Math.round(studied / qCount * 100);
+    const imgCount = sec.qs.filter(q => q.imgs && q.imgs.length > 0).length;
+
+    const el = document.createElement('div');
+    el.className = 'section-item';
+    el.innerHTML = `
+      <div class="snum">${String(i+1).padStart(2,'0')}</div>
+      <div class="sinfo">
+        <div class="sname">${escHtml(sec.name)}</div>
+        <div class="smeta">
+          <span>${qCount} питань</span>
+          ${imgCount > 0 ? `<span>📷 ${imgCount}</span>` : ''}
+          ${studied > 0 ? `<span>✅ ${studied}</span>` : ''}
+        </div>
+        <div class="spg"><div class="spg-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="scheck">›</div>
+    `;
+    el.onclick = () => openSection(i);
+    list.appendChild(el);
+  });
+}
+
+function filterSections() {
+  buildSectionList(document.getElementById('sectionSearch').value);
+}
+
+function buildExamConfigSections() {
+  const sel = document.getElementById('cfgSection');
+  const current = sel.value;
+  sel.innerHTML = '<option value="all">Всі розділи</option>';
+  state.sections.forEach(sec => {
+    const opt = document.createElement('option');
+    opt.value = sec.name;
+    opt.textContent = sec.name.length > 30 ? sec.name.slice(0, 30) + '…' : sec.name;
+    sel.appendChild(opt);
+  });
+  sel.value = current || 'all';
+}
+
+// ═══════════════════════════════════════
+// STUDY MODE
+// ═══════════════════════════════════════
+function openSection(idx) {
+  const sec = state.sections[idx];
+  state.currentSection = idx;
+  state.currentSectionQs = [...sec.qs];
+  state.studyIdx = 0;
+  state.studyAnswered = {};
+
+  screenStack = ['screenHome', 'screenSections', 'screenStudy'];
+  showScreen('screenStudy');
+  const shortName = sec.name.length > 28 ? sec.name.slice(0, 28) + '…' : sec.name;
+  setNavBar(true, shortName);
+  renderStudyQuestion();
+}
+
+function renderStudyQuestion() {
+  const qs = state.currentSectionQs;
+  const idx = state.studyIdx;
+  const q = qs[idx];
+  const total = qs.length;
+
+  document.getElementById('studyCounter').textContent = `${idx + 1} / ${total}`;
+  document.getElementById('studyPBar').style.width = `${((idx + 1) / total) * 100}%`;
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = idx === total - 1;
+
+  const answered = state.studyAnswered[q.id];
+  const area = document.getElementById('studyQuestionArea');
+  area.innerHTML = '';
+
+  const card = document.createElement('div');
+  card.className = 'q-card';
+
+  let imgsHtml = '';
+  if (q.imgs && q.imgs.length > 0) {
+    imgsHtml = `<div class="q-imgs">${q.imgs.map(src =>
+      `<img src="${escHtml(src)}" onclick="zoomImg('${escHtml(src)}')" loading="lazy">`
+    ).join('')}</div>`;
+  }
+
+  let optsHtml = q.opts.map((opt, oi) => {
+    let cls = '';
+    if (answered) {
+      if (oi === q.correct) cls = 'reveal-correct';
+      if (oi === answered.selected && oi !== q.correct) cls = 'selected-wrong';
+      if (oi === answered.selected && oi === q.correct) cls = 'selected-correct';
+    }
+    return `<div class="option ${cls} ${answered ? 'disabled' : ''}" onclick="studyAnswer(${oi})">
+      <span class="opt-letter">${String.fromCharCode(65+oi)}</span>
+      <span>${escHtml(opt)}</span>
+    </div>`;
+  }).join('');
+
+  let feedbackHtml = '';
+  if (answered) {
+    if (answered.correct) {
+      feedbackHtml = `<div class="feedback-strip fb-ok show">✅ Правильно!</div>`;
+    } else {
+      feedbackHtml = `<div class="feedback-strip fb-no show">❌ Правильна відповідь: ${escHtml(q.opts[q.correct])}</div>`;
+    }
+  }
+
+  card.innerHTML = `
+    <div class="q-tag">
+      <span>📖 Навчання</span>
+      <span class="qid">${escHtml(q.id)}</span>
+    </div>
+    <div class="q-text">${escHtml(q.q)}</div>
+    ${imgsHtml}
+    <div class="options">${optsHtml}</div>
+    ${feedbackHtml}
+    ${!answered ? `<button class="show-answer-btn show" onclick="showStudyAnswer()">Показати відповідь</button>` : ''}
+  `;
+
+  area.appendChild(card);
+}
+
+function studyAnswer(optIdx) {
+  const q = state.currentSectionQs[state.studyIdx];
+  if (state.studyAnswered[q.id]) return;
+
+  const correct = optIdx === q.correct;
+  state.studyAnswered[q.id] = { selected: optIdx, correct };
+  markAnswered(q.id, correct);
+  renderStudyQuestion();
+
+  // Auto-advance after 1.2s if correct
+  if (correct) {
+    setTimeout(() => {
+      if (state.studyIdx < state.currentSectionQs.length - 1) {
+        studyNav(1);
+      }
+    }, 1200);
+  }
+}
+
+function showStudyAnswer() {
+  const q = state.currentSectionQs[state.studyIdx];
+  state.studyAnswered[q.id] = { selected: q.correct, correct: true, revealed: true };
+  renderStudyQuestion();
+}
+
+function studyNav(dir) {
+  const newIdx = state.studyIdx + dir;
+  if (newIdx < 0 || newIdx >= state.currentSectionQs.length) return;
+  state.studyIdx = newIdx;
+  renderStudyQuestion();
+  document.getElementById('studyQuestionArea').scrollTop = 0;
+}
+
+// ═══════════════════════════════════════
+// EXAM MODE
+// ═══════════════════════════════════════
+let examConfig = { questions: 20, time: 20, section: 'all', shuffle: true };
+
+function syncExamConfig() {
+  document.getElementById('cfgQuestions').textContent = examConfig.questions;
+  document.getElementById('cfgTime').textContent = examConfig.time;
+  document.getElementById('cfgSection').value = examConfig.section;
+  document.getElementById('cfgShuffle').checked = examConfig.shuffle;
+}
+
+function adjustConfig(key, delta) {
+  if (key === 'questions') {
+    examConfig.questions = Math.max(5, Math.min(100, examConfig.questions + delta));
+  } else if (key === 'time') {
+    examConfig.time = Math.max(5, Math.min(60, examConfig.time + delta));
+  }
+  syncExamConfig();
+}
+
+function startExam() {
+  examConfig.section = document.getElementById('cfgSection').value;
+  examConfig.shuffle = document.getElementById('cfgShuffle').checked;
+
+  let pool = examConfig.section === 'all'
+    ? [...QUESTIONS]
+    : QUESTIONS.filter(q => q.section === examConfig.section);
+
+  if (examConfig.shuffle) {
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+  }
+
+  state.examQs = pool.slice(0, examConfig.questions);
+  state.examIdx = 0;
+  state.examAnswers = new Array(state.examQs.length).fill(null);
+  state.examSecsLeft = examConfig.time * 60;
+  state.examStartTime = Date.now();
+  state.examWrongQs = [];
+
+  screenStack = ['screenHome', 'screenExamConfig', 'screenExam'];
+  showScreen('screenExam');
+  setNavBar(true, 'Іспит');
+  renderExamQuestion();
+  startExamTimer();
+}
+
+function renderExamQuestion() {
+  const q = state.examQs[state.examIdx];
+  const total = state.examQs.length;
+  const answered = state.examAnswers[state.examIdx];
+  const correct = state.examAnswers.filter(a => a && a.correct).length;
+  const wrong = state.examAnswers.filter(a => a && !a.correct).length;
+  const rem = total - state.examAnswers.filter(a => a !== null).length;
+
+  document.getElementById('examQNum').textContent = `Питання ${state.examIdx + 1} / ${total}`;
+  document.getElementById('examCorrect').textContent = correct;
+  document.getElementById('examWrong').textContent = wrong;
+  document.getElementById('examRem').textContent = rem;
+  document.getElementById('examPBar').style.width = `${(state.examIdx / total) * 100}%`;
+
+  let imgsHtml = '';
+  if (q.imgs && q.imgs.length > 0) {
+    imgsHtml = `<div class="q-imgs">${q.imgs.map(src =>
+      `<img src="${escHtml(src)}" onclick="zoomImg('${escHtml(src)}')" loading="lazy">`
+    ).join('')}</div>`;
+  }
+
+  let optsHtml = q.opts.map((opt, oi) => {
+    let cls = '';
+    if (answered) {
+      if (oi === q.correct) cls = 'reveal-correct';
+      if (oi === answered.selected && oi !== q.correct) cls = 'selected-wrong';
+      if (oi === answered.selected && oi === q.correct) cls = 'selected-correct';
+    }
+    return `<div class="option ${cls} ${answered ? 'disabled' : ''}" onclick="examAnswer(${oi})">
+      <span class="opt-letter">${String.fromCharCode(65+oi)}</span>
+      <span>${escHtml(opt)}</span>
+    </div>`;
+  }).join('');
+
+  let feedbackHtml = '';
+  if (answered) {
+    if (answered.correct) {
+      feedbackHtml = `<div class="feedback-strip fb-ok show">✅ Правильно!</div>`;
+    } else {
+      feedbackHtml = `<div class="feedback-strip fb-no show">❌ Правильна: ${escHtml(q.opts[q.correct])}</div>`;
+    }
+  }
+
+  const isLast = state.examIdx === total - 1;
+  const nextLabel = isLast ? '📊 Результати' : 'Наступне →';
+
+  document.getElementById('examBody').innerHTML = `
+    <div class="q-card">
+      <div class="q-tag">
+        <span>🏆 Іспит</span>
+        <span class="qid">${escHtml(q.section)}</span>
+      </div>
+      <div class="q-text">${escHtml(q.q)}</div>
+      ${imgsHtml}
+      <div class="options">${optsHtml}</div>
+      ${feedbackHtml}
+    </div>
+    <button class="exam-next-btn ${answered ? 'show' : ''}" onclick="examNext()">${nextLabel}</button>
+  `;
+}
+
+function examAnswer(optIdx) {
+  if (state.examAnswers[state.examIdx]) return;
+  const q = state.examQs[state.examIdx];
+  const correct = optIdx === q.correct;
+  state.examAnswers[state.examIdx] = { selected: optIdx, correct };
+  markAnswered(q.id, correct);
+  if (!correct) {
+    state.examWrongQs.push({ q, selected: optIdx });
+  }
+  renderExamQuestion();
+  // Auto-advance if correct
+  if (correct) {
+    setTimeout(() => examNext(), 900);
+  }
+}
+
+function examNext() {
+  const total = state.examQs.length;
+  if (state.examIdx < total - 1) {
+    // Skip to next unanswered, or just go forward
+    state.examIdx++;
+    renderExamQuestion();
+    document.getElementById('examBody').scrollTop = 0;
+  } else {
+    finishExam();
+  }
+}
+
+function startExamTimer() {
+  stopExamTimer();
+  updateTimerDisplay();
+  state.examTimer = setInterval(() => {
+    state.examSecsLeft--;
+    updateTimerDisplay();
+    if (state.examSecsLeft <= 0) {
+      finishExam(true);
+    }
+  }, 1000);
+}
+
+function stopExamTimer() {
+  if (state.examTimer) { clearInterval(state.examTimer); state.examTimer = null; }
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(state.examSecsLeft / 60);
+  const s = state.examSecsLeft % 60;
+  const txt = `${m}:${String(s).padStart(2, '0')}`;
+  const el = document.getElementById('examTimer');
+  if (el) {
+    el.textContent = txt;
+    el.classList.toggle('warning', state.examSecsLeft <= 60);
+  }
+}
+
+function finishExam(timeout = false) {
+  stopExamTimer();
+  incExamCount();
+
+  const elapsed = Math.round((Date.now() - state.examStartTime) / 1000);
+  const total = state.examQs.length;
+  const answered = state.examAnswers.filter(a => a !== null).length;
+  const correct = state.examAnswers.filter(a => a && a.correct).length;
+  const wrong = answered - correct;
+  const pct = Math.round(correct / total * 100);
+  const pass = pct >= 75;
+
+  document.getElementById('resultEmoji').textContent = pass ? '🎉' : '😔';
+  const verdict = document.getElementById('resultVerdict');
+  verdict.textContent = pass ? 'ЗДАНО!' : 'НЕ ЗДАНО';
+  verdict.className = 'result-verdict ' + (pass ? 'pass' : 'fail');
+  document.getElementById('resultScore').textContent =
+    timeout ? `Час вийшов! Дано відповідей: ${answered}/${total}` : `${correct} з ${total} правильних`;
+  document.getElementById('resCorrect').textContent = correct;
+  document.getElementById('resWrong').textContent = wrong;
+  document.getElementById('resPct').textContent = pct + '%';
+
+  const em = Math.floor(elapsed / 60), es = elapsed % 60;
+  document.getElementById('resTime').textContent = `Час: ${em}хв ${es}с`;
+
+  // Wrong questions list
+  const wl = document.getElementById('wrongList');
+  const ww = document.getElementById('wrongListWrap');
+  wl.innerHTML = '';
+  if (state.examWrongQs.length > 0) {
+    ww.style.display = '';
+    state.examWrongQs.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'wrong-item';
+      el.innerHTML = `
+        <div class="wi-q">${escHtml(item.q.q)}</div>
+        <div class="wi-given">Ваша відповідь: ${escHtml(item.q.opts[item.selected])}</div>
+        <div class="wi-correct">✅ Правильно: ${escHtml(item.q.opts[item.q.correct])}</div>
+      `;
+      wl.appendChild(el);
+    });
+  } else {
+    ww.style.display = 'none';
+  }
+
+  screenStack = ['screenHome', 'screenResults'];
+  showScreen('screenResults');
+  setNavBar(false, '');
+}
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function zoomImg(src) {
+  document.getElementById('zoomImg').src = src;
+  document.getElementById('imgOverlay').classList.add('show');
+}
+function closeZoom() {
+  document.getElementById('imgOverlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════
+// PWA INSTALL
+// ═══════════════════════════════════════
+let deferredInstall = null;
+function setupPWA() {
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredInstall = e;
+    const banner = document.getElementById('installBanner');
+    if (!localStorage.getItem('pdr_install_dismissed')) {
+      banner.style.display = 'flex';
+    }
+  });
+  document.getElementById('installBtn').onclick = () => {
+    if (deferredInstall) {
+      deferredInstall.prompt();
+      deferredInstall.userChoice.then(() => {
+        deferredInstall = null;
+        document.getElementById('installBanner').style.display = 'none';
+        localStorage.setItem('pdr_install_dismissed', '1');
+      });
+    }
+  };
+}
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// Back button (hardware)
+window.addEventListener('popstate', goBack);
+
+// Init
+init();
+</script>
+</body>
+</html>
